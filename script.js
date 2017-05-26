@@ -10,11 +10,25 @@ $('.article-container').on('click', '#upvote-btn', changeUpvoteQuality);
 $('.article-container').on('focusout', '.description', replaceEditedDescription);
 $('.article-container').on('focusout', 'h2', replaceEditedTitle);
 
+$('.article-container').on('input keydown', '.description', function(e) {
+  if (e.keyCode === 13) {
+      // replaceEditedDescription(e) - gets error below
+      // Uncaught DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is no longer a child of this node. Perhaps it was moved in a 'blur' event handler?
+    $(e.target).prop('contenteditable', false);
+  }
+})
+
+$('.article-container').on('input keydown', 'h2', function(e) {
+  if (e.keyCode === 13) {
+    $(e.target).prop('contenteditable', false);
+  }
+})
+
 $('#body-input').on('input', function() {
   toggleSaveDisable();
 });
 
-$('#body-input').on('keydown', function(e) {
+$('#body-input').on('input keydown', function(e) {
   if(e.keyCode === 13) {
     e.preventDefault();
   }
@@ -22,6 +36,11 @@ $('#body-input').on('keydown', function(e) {
 
 $('#search-input').on('input', filterIdeas);
 $('#submit-btn').on('click', submitNewIdea);
+
+
+function removePlaceholder() {
+    $('.section-placeholder').toggle()
+}
 
 $('#title-input').on('input', function() {
   toggleSaveDisable();
@@ -36,6 +55,7 @@ $(window).on('keyup', function(e) {
 
 $(window).on('load', function() {
   $('#title-input').focus();
+  removePlaceholder();
 });
 
 function changeDownvoteQuality(e) {
@@ -165,12 +185,13 @@ function removeIdea(e) {
   localStorage.clear();
   setInLocalStorage();
   $(this).parents('article').remove();
+  removePlaceholder();
 }
 
 function replaceEditedDescription(e) {
-  var editedObject = findIndexIdeaList($(e.target).parent().parent().prop('id'));
-  editedObject.body = $(this).text();
-  replaceIdeaInLocalStorage(editedObject);
+    var editedObject = findIndexIdeaList($(e.target).parent().parent().prop('id'));
+    editedObject.body = $(this).text();
+    replaceIdeaInLocalStorage(editedObject);
 }
 
 function replaceEditedTitle(e) {
@@ -203,6 +224,9 @@ function submitNewIdea(e) {
   setInLocalStorage();
   clearInputs();
   filterIdeas();
+  if (localStorage.length === 0) {
+    removePlaceholder();
+  }
 }
 
 function switchDownvote(editedObject) {
